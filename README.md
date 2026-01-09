@@ -18,7 +18,7 @@ An automated Node.js service that monitors the French government's **RappelConso
 
 ### 1. Clone the repository
 ```bash
-git clone ![https://github.com/StaubDevLab/rappel_conso_daily_digest.git](https://github.com/StaubDevLab/rappel_conso_daily_digest.git)
+git clone https://github.com/StaubDevLab/rappel_conso_daily_digest.git
 cd rappel_conso_daily_digest
 npm install
 
