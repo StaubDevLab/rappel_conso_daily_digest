@@ -1,7 +1,7 @@
 
 # 🍎 RappelConso Daily Digest
 
-[![Daily Recall Scan](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/daily-recall.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/daily-recall.yml)
+[![Daily RappelConso Mail](https://github.com/StaubDevLab/rappel_conso_daily_digest/actions/workflows/daily-recall.yml/badge.svg)](https://github.com/StaubDevLab/rappel_conso_daily_digest/actions/workflows/daily-recall.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An automated Node.js service that monitors the French government's **RappelConso** API. It sends a beautifully formatted daily email digest of food recalls to keep you and your family safe.
