@@ -32,6 +32,8 @@ To run this via GitHub Actions, go to your repository **Settings > Secrets and v
 | --- | --- |
 | `RESEND_API_KEY` | Your API Key from [Resend.com](https://resend.com) |
 | `EMAIL_TO` | The email address where you want to receive the alerts |
+| `TELEGRAM_TOKEN` | Your Telegram Bot Token |
+| `TELEGRAM_CHAT_ID` | The Telegram Chat ID where you want to receive the alerts |
 
 ### 3. (Optional) Local Testing
 
@@ -40,7 +42,8 @@ To test the script locally, create a `.env` file at the root:
 ```env
 RESEND_API_KEY=re_your_api_key
 EMAIL_TO=your_email@example.com
-
+TELEGRAM_TOKEN=your_telegram_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
 ```
 
 Then run:
