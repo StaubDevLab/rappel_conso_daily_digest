@@ -51,13 +51,18 @@ function generateHtmlEmail(recalls) {
     </body></html>`;
 }
 
-async function sendEmail(recalls) {
+async function sendEmail(recalls, isWeekly = false) {
     try {
-        const html = generateHtmlEmail(recalls);
+        const title = isWeekly
+            ? `📊 RÉCAPITULATIF HEBDOMADAIRE : ${recalls.length} alertes`
+            : `⚠️ RappelConso : ${recalls.length} alertes aujourd'hui`;
+
+        const html = generateHtmlEmail(recalls); // Tu peux aussi modifier le HTML pour dire "Récap de la semaine"
+
         await resend.emails.send({
             from: "RappelConso <onboarding@resend.dev>",
             to: [process.env.EMAIL_TO],
-            subject: `⚠️ RappelConso : ${recalls.length} alertes aujourd'hui`,
+            subject: title,
             html: html,
         });
         console.log("Email envoyé !");
