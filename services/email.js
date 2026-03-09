@@ -1,4 +1,4 @@
-const { Resend } = require('resend');
+import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -7,46 +7,71 @@ function cleanText(text) {
     return text.replace(/¤/g, '<br>• ').replace(/\|/g, ', ');
 }
 
-function generateHtmlEmail(recalls) {
+function generateHtmlEmail(recalls, isWeekly = false) {
     const today = new Date().toLocaleDateString('fr-FR', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
+    const headerTitle = isWeekly ? "📊 Récapitulatif Hebdomadaire" : "🍎 Alertes RappelConso";
+    const headerColor = isWeekly ? "#3b82f6" : "#ef4444"; // Bleue pour hebdo, rouge pour daily
+
     const itemsHtml = recalls.map(item => {
-        const imgUrl = item.liens_vers_les_images ? item.liens_vers_les_images.split('|')[0] : 'https://via.placeholder.com/150?text=No+Image';
-        const isCritical = item.risques_encourus?.toLowerCase().match(/listeria|salmonelle|norovirus/);
-        const badgeColor = isCritical ? '#eb4d4b' : '#686de0';
+        const imgUrl = item.liens_vers_les_images ? item.liens_vers_les_images.split('|')[0] : 'https://placehold.co/150x150/f1f5f9/94a3b8?text=Image\\nIndisponible';
+        const isCritical = item.risques_encourus?.toLowerCase().match(/listeria|salmonelle|norovirus|botulisme/);
+        const badgeColor = isCritical ? '#dc2626' : '#f59e0b';
+        const badgeText = isCritical ? 'CRITIQUE' : 'AVERTISSEMENT';
+        const badgeBg = isCritical ? '#fef2f2' : '#fffbeb';
 
         return `
-        <div style="background-color: #ffffff; border: 1px solid #edf2f7; border-radius: 12px; margin-bottom: 24px; overflow: hidden; font-family: sans-serif;">
-            <div style="background-color: ${badgeColor}; height: 4px;"></div>
-            <div style="padding: 20px;">
-                <table width="100%">
+        <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; margin-bottom: 24px; overflow: hidden; font-family: 'Helvetica Neue', Arial, sans-serif; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="background-color: ${badgeColor}; height: 6px;"></div>
+            <div style="padding: 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">
                     <tr>
-                        <td width="100" valign="top"><img src="${imgUrl}" width="100" style="border-radius: 8px;"></td>
+                        <td width="120" valign="top">
+                            <img src="${imgUrl}" width="120" height="120" style="border-radius: 12px; object-fit: cover; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" alt="Image du produit">
+                        </td>
                         <td style="padding-left: 20px;" valign="top">
-                            <span style="font-size: 11px; font-weight: bold; color: ${badgeColor}; text-transform: uppercase;">${item.sous_categorie_produit}</span>
-                            <h3 style="margin: 4px 0; color: #1a202c;">${item.marque_produit?.toUpperCase()}</h3>
-                            <p style="margin: 0; color: #4a5568;">${item.libelle}</p>
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td>
+                                        <span style="display: inline-block; padding: 4px 10px; border-radius: 20px; background-color: ${badgeBg}; color: ${badgeColor}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid ${badgeColor}33;">
+                                            ${badgeText}
+                                        </span>
+                                        <span style="font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; margin-left: 8px;">
+                                            ${item.sous_categorie_produit}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                            <h3 style="margin: 10px 0 6px 0; color: #0f172a; font-size: 20px; letter-spacing: -0.5px;">${item.marque_produit?.toUpperCase() || "MARQUE INCONNUE"}</h3>
+                            <p style="margin: 0; color: #475569; font-size: 15px; line-height: 1.5;">${item.libelle}</p>
                         </td>
                     </tr>
                 </table>
-                <div style="margin-top: 15px; background-color: #f8fafc; border-radius: 8px; padding: 12px; font-size: 14px;">
-                    <p style="margin-bottom: 8px;"><strong>⚠️ Motif :</strong> ${cleanText(item.motif_rappel)}</p>
-                    <p style="color: #718096;"><strong>Risques :</strong> ${cleanText(item.risques_encourus)}</p>
+                <div style="background-color: #f8fafc; border-radius: 12px; padding: 16px; font-size: 14px; border: 1px solid #f1f5f9;">
+                    <p style="margin: 0 0 10px 0; line-height: 1.5;"><strong style="color: #334155;">⚠️ Motif :</strong> <span style="color: #475569;">${cleanText(item.motif_rappel)}</span></p>
+                    <p style="margin: 0; color: #64748b; line-height: 1.5;"><strong style="color: #334155;">☣️ Risques :</strong> ${cleanText(item.risques_encourus)}</p>
                 </div>
-                <div style="margin-top: 15px; text-align: right;">
-                    <a href="${item.lien_vers_la_fiche_rappel}" style="background-color: #2d3748; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">Détails</a>
+                <div style="margin-top: 20px; text-align: right;">
+                    <a href="${item.lien_vers_la_fiche_rappel}" style="display: inline-block; background-color: ${headerColor}; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px ${headerColor}40;">Consulter la fiche officielle &rarr;</a>
                 </div>
             </div>
         </div>`;
     }).join('');
 
-    return `<!DOCTYPE html><html><body style="background-color: #f7fafc; padding: 20px;">
-        <div style="max-width: 600px; margin: auto;">
-            <h1 style="text-align: center; font-family: sans-serif;">🍎 Veille RappelConso</h1>
-            <p style="text-align: center; color: #718096;">Condensé du ${today}</p>
+    return `<!DOCTYPE html><html>
+    <body style="background-color: #f1f5f9; padding: 30px 10px; margin: 0;">
+        <div style="max-width: 640px; margin: auto;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; color: #0f172a; font-size: 28px; margin-bottom: 8px; letter-spacing: -1px;">${headerTitle}</h1>
+                <p style="text-align: center; color: #64748b; font-size: 15px; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0;">Condensé du ${today} • <strong>${recalls.length}</strong> alertes identifiées</p>
+            </div>
             ${itemsHtml}
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #cbd5e1; font-family: 'Helvetica Neue', Arial, sans-serif;">
+                <p style="color: #94a3b8; font-size: 13px;">Données fournies par l'API officielle RappelConso (data.gouv.fr)</p>
+                <p style="color: #94a3b8; font-size: 13px;">Restez vigilant face aux risques sanitaires.</p>
+            </div>
         </div>
     </body></html>`;
 }
@@ -71,4 +96,4 @@ async function sendEmail(recalls, isWeekly = false) {
     }
 }
 
-module.exports = { sendEmail };
+export { sendEmail };

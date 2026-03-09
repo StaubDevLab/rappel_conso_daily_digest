@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 function escapeHTML(text) {
     if (!text) return "";
@@ -15,20 +15,33 @@ async function sendTelegram(recalls, isWeekly = false) {
     if (!recalls || recalls.length === 0) return;
 
     let message = isWeekly
-        ? `<b>📊 RÉCAPITULATIF DE LA SEMAINE</b>\n`
-        : `<b>🍎 RAPPELCONSO QUOTIDIEN</b>\n`;
+        ? `📅 <b>RÉCAPITULATIF HEBDOMADAIRE</b>\n`
+        : `🚨 <b>ALERTES RAPPELCONSO</b>\n`;
 
-    message += `<i>Total : ${recalls.length} produit(s)</i>\n\n`;
+    message += `<i>📌 ${recalls.length} produit(s) identifié(s)</i>\n`;
+    message += `➖➖➖➖➖➖➖➖➖➖\n\n`;
 
     const limit = isWeekly ? 10 : 5;
 
     for (const item of recalls.slice(0, limit)) {
         const brand = escapeHTML(item.marque_produit?.toUpperCase() || "INCONNUE");
         const name = escapeHTML(item.libelle || "");
+        const isCritical = item.risques_encourus?.toLowerCase().match(/listeria|salmonelle|norovirus|botulisme/);
+        const hazardIcon = isCritical ? '🔴' : '⚠️';
 
-        message += `⚠️ <b>${brand}</b>\n`;
+        let risque = escapeHTML(item.risques_encourus || "Non précisé");
+        // On tronque le texte du risque s'il est trop long pour Telegram
+        risque = risque.length > 80 ? risque.substring(0, 80) + '...' : risque;
+
+        message += `${hazardIcon} <b>${brand}</b>\n`;
         message += `📦 ${name}\n`;
-        message += `🔗 <a href="${item.lien_vers_la_fiche_rappel}">Voir la fiche</a>\n\n`;
+        message += `🦠 <i>Risque : ${risque}</i>\n`;
+        message += `🔗 <a href="${item.lien_vers_la_fiche_rappel}">Voir la fiche officielle</a>\n\n`;
+    }
+
+    if (recalls.length > limit) {
+        message += `➖➖➖➖➖➖➖➖➖➖\n`;
+        message += `<i>...et ${recalls.length - limit} autres alertes à consulter dans le mail détaillé.</i>\n`;
     }
 
     try {
@@ -51,4 +64,4 @@ async function sendTelegram(recalls, isWeekly = false) {
     }
 }
 
-module.exports = { sendTelegram };
+export { sendTelegram };
