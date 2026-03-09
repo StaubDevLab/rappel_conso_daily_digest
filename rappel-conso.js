@@ -3,7 +3,7 @@ import axios from 'axios';
 import { sendEmail } from './services/email.js'; // Déplacez votre code Resend ici
 import { sendTelegram } from './services/telegram.js';
 
-async function getDailyRecalls(daysBack = 2) {
+async function getDailyRecalls(daysBack = 1) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
     const dateString = startDate.toISOString().split('T')[0];
