@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -20,6 +23,14 @@
             <h1>Rappel Conso Daily Digest</h1>
             <p class="last-update" id="lastUpdate">Chargement des données...</p>
         </header>
+
+        <section class="filters">
+            <div class="filter-group">
+                <label for="dateFilter" class="filter-label">Filtrer par date :</label>
+                <input type="date" id="dateFilter" class="date-input">
+            </div>
+            <div id="filterStats" class="last-update"></div>
+        </section>
 
         <main id="app">
             <div class="loading">Chargement des derniers rappels...</div>
@@ -36,6 +47,14 @@
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const themeText = document.getElementById('themeText');
+        const dateFilter = document.getElementById('dateFilter');
+        const filterStats = document.getElementById('filterStats');
+
+        let allRecalls = [];
+
+        // Set default date to today
+        const todayStr = new Date().toISOString().split('T')[0];
+        dateFilter.value = todayStr;
 
         // Theme management
         const currentTheme = localStorage.getItem('theme') || 'light';
@@ -65,7 +84,15 @@
                 const response = await fetch('data.json');
                 if (!response.ok) throw new Error('Données non disponibles');
                 const data = await response.json();
-                renderRecalls(data);
+                allRecalls = data.recalls || [];
+
+                const updateDate = new Date(data.lastUpdate).toLocaleString('fr-FR', {
+                    dateStyle: 'long',
+                    timeStyle: 'short'
+                });
+                lastUpdateEl.textContent = `Dernière mise à jour : ${updateDate}`;
+
+                filterAndRender();
             } catch (err) {
                 app.innerHTML = `
                     <div class="loading">
@@ -77,16 +104,22 @@
             }
         }
 
-        function renderRecalls(data) {
-            const { lastUpdate, recalls } = data;
-            const date = new Date(lastUpdate).toLocaleString('fr-FR', {
-                dateStyle: 'long',
-                timeStyle: 'short'
+        function filterAndRender() {
+            const selectedDate = dateFilter.value;
+            const filtered = allRecalls.filter(recall => {
+                const pubDate = recall.date_publication ? recall.date_publication.split('T')[0] : '';
+                return pubDate === selectedDate;
             });
-            lastUpdateEl.textContent = `Dernière mise à jour : ${date}`;
 
+            filterStats.textContent = `(${filtered.length} rappel${filtered.length > 1 ? 's' : ''} trouvé${filtered.length > 1 ? 's' : ''})`;
+            renderRecalls(filtered);
+        }
+
+        dateFilter.addEventListener('change', filterAndRender);
+
+        function renderRecalls(recalls) {
             if (!recalls || recalls.length === 0) {
-                app.innerHTML = '<div class="loading">Aucun rappel trouvé ces derniers jours.</div>';
+                app.innerHTML = '<div class="loading">Aucun rappel trouvé pour cette date.</div>';
                 return;
             }
 
@@ -118,4 +151,5 @@
         fetchRecalls();
     </script>
 </body>
+
 </html>

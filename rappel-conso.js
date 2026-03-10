@@ -46,7 +46,7 @@ async function getDailyRecalls(daysBack = 1) {
 
 async function main() {
     // Vérification des variables d'environnement
-    const requiredEnvVars = ['RESEND_API_KEY', 'EMAIL_TO', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID'];
+    const requiredEnvVars = ['RESEND_API_KEY', 'EMAIL_TO', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID', 'DASHBOARD_URL'];
     const missingVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
     if (missingVars.length > 0) {
@@ -84,8 +84,8 @@ async function main() {
         }
 
         await Promise.all([
-            sendEmail(recalls, isSunday),
-            sendTelegram(recalls, isSunday)
+            sendEmail(recalls, isSunday, process.env.DASHBOARD_URL),
+            sendTelegram(recalls, isSunday, process.env.DASHBOARD_URL)
         ]);
         console.log(`✅ Traitement terminé avec succès.`);
     } else {

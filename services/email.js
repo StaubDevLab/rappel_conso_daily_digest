@@ -7,7 +7,7 @@ function cleanText(text) {
     return text.replace(/¤/g, '<br>• ').replace(/\|/g, ', ');
 }
 
-function generateHtmlEmail(recalls, isWeekly = false) {
+function generateHtmlEmail(recalls, isWeekly = false, dashboardUrl = null) {
     const today = new Date().toLocaleDateString('fr-FR', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
@@ -66,6 +66,10 @@ function generateHtmlEmail(recalls, isWeekly = false) {
             <div style="text-align: center; margin-bottom: 30px;">
                 <h1 style="text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; color: #0f172a; font-size: 28px; margin-bottom: 8px; letter-spacing: -1px;">${headerTitle}</h1>
                 <p style="text-align: center; color: #64748b; font-size: 15px; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0;">Condensé du ${today} • <strong>${recalls.length}</strong> alertes identifiées</p>
+                ${dashboardUrl ? `
+                <div style="margin-top: 20px;">
+                    <a href="${dashboardUrl}" style="display: inline-block; background-color: #0f172a; color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 700; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">🌐 Visualiser sur le site web &rarr;</a>
+                </div>` : ''}
             </div>
             ${itemsHtml}
             <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #cbd5e1; font-family: 'Helvetica Neue', Arial, sans-serif;">
@@ -76,13 +80,13 @@ function generateHtmlEmail(recalls, isWeekly = false) {
     </body></html>`;
 }
 
-async function sendEmail(recalls, isWeekly = false) {
+async function sendEmail(recalls, isWeekly = false, dashboardUrl = null) {
     try {
         const title = isWeekly
             ? `📊 RÉCAPITULATIF HEBDOMADAIRE : ${recalls.length} alertes`
             : `⚠️ RappelConso : ${recalls.length} alertes aujourd'hui`;
 
-        const html = generateHtmlEmail(recalls); // Tu peux aussi modifier le HTML pour dire "Récap de la semaine"
+        const html = generateHtmlEmail(recalls, isWeekly, dashboardUrl); // Tu peux aussi modifier le HTML pour dire "Récap de la semaine"
 
         await resend.emails.send({
             from: "RappelConso <onboarding@resend.dev>",

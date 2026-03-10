@@ -8,7 +8,7 @@ function escapeHTML(text) {
         .replace(/>/g, "&gt;");
 }
 
-async function sendTelegram(recalls, isWeekly = false) {
+async function sendTelegram(recalls, isWeekly = false, dashboardUrl = null) {
     const token = process.env.TELEGRAM_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -41,7 +41,11 @@ async function sendTelegram(recalls, isWeekly = false) {
 
     if (recalls.length > limit) {
         message += `➖➖➖➖➖➖➖➖➖➖\n`;
-        message += `<i>...et ${recalls.length - limit} autres alertes à consulter dans le mail détaillé.</i>\n`;
+        message += `<i>...et ${recalls.length - limit} autres alertes à consulter.</i>\n`;
+    }
+
+    if (dashboardUrl) {
+        message += `\n🌐 <a href="${dashboardUrl}">Voir toutes les alertes sur le site</a>`;
     }
 
     try {

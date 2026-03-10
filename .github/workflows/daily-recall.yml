@@ -29,6 +29,7 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
         run: node rappel-conso.js
 
       - name: Commit and push changes
