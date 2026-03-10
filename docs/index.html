@@ -125,25 +125,50 @@
 
             app.innerHTML = `
                 <div class="recalls-grid">
-                    ${recalls.map(recall => `
+                    ${recalls.map(recall => {
+                const isCritical = recall.risques_encourus?.toLowerCase().match(/listeria|salmonelle|norovirus|botulisme/);
+                return `
                         <div class="recall-card">
-                            <img src="${recall.liens_vers_les_images || 'https://via.placeholder.com/400x200?text=Pas+d+image'}" 
+                            <img src="${recall.liens_vers_les_images || 'images/placeholder.png'}" 
                                  alt="${recall.nom_de_la_marque_du_produit}" 
                                  class="recall-image"
-                                 onerror="this.src='https://via.placeholder.com/400x200?text=Image+non+disponible'">
+                                 onerror="this.src='images/placeholder.png'">
                             <div class="recall-content">
-                                <span class="recall-category">${recall.categorie_produit || 'Alimentation'}</span>
-                                <h2 class="recall-title">${recall.nom_de_la_marque_du_produit || 'Sans marque'} - ${recall.noms_des_modeles_ou_references || 'Produit sans nom'}</h2>
-                                <p class="recall-details">${(recall.motif_du_rappel || '').substring(0, 150)}${recall.motif_du_rappel?.length > 150 ? '...' : ''}</p>
+                                <div class="badge-group">
+                                    <span class="badge ${isCritical ? 'badge-danger' : 'badge-info'}">${recall.categorie_produit || 'Alimentation'}</span>
+                                    ${recall.nom_de_la_marque_du_produit ? `<span class="badge badge-info">${recall.nom_de_la_marque_du_produit}</span>` : ''}
+                                </div>
+                                <h2 class="recall-title">${recall.noms_des_modeles_ou_references || 'Produit sans nom'}</h2>
+                                <p class="recall-details" title="${recall.motif_du_rappel || ''}">${recall.motif_du_rappel || 'Aucun motif précisé'}</p>
+                                
+                                <div class="recall-extra">
+                                    ${recall.risques_encourus ? `
+                                    <div class="extra-item">
+                                        <span class="extra-icon">☣️</span>
+                                        <span class="extra-text">${recall.risques_encourus}</span>
+                                    </div>` : ''}
+                                    ${recall.distributeurs ? `
+                                    <div class="extra-item">
+                                        <span class="extra-icon">🛒</span>
+                                        <span class="extra-text">${recall.distributeurs}</span>
+                                    </div>` : ''}
+                                    ${recall.zone_geographique_de_vente ? `
+                                    <div class="extra-item">
+                                        <span class="extra-icon">📍</span>
+                                        <span class="extra-text">${recall.zone_geographique_de_vente}</span>
+                                    </div>` : ''}
+                                </div>
+
                                 <div class="recall-meta">
-                                    <span class="risk-level">Risque signalé</span>
+                                    <span class="risk-level">${isCritical ? '⚠️ Risque Critique' : '🔔 Rappel'}</span>
                                     <a href="${recall.lien_vers_la_fiche_rappel}" target="_blank" class="view-link">
-                                        Voir la fiche <span>→</span>
+                                        Fiche officielle <span>→</span>
                                     </a>
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `;
+            }).join('')}
                 </div>
             `;
         }

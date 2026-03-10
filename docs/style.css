@@ -184,10 +184,64 @@ h1 {
 }
 
 .recall-details {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
     margin-bottom: 1rem;
-    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.recall-extra {
+    font-size: 0.8rem;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+}
+
+.extra-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.extra-icon {
+    font-size: 1rem;
+    min-width: 1.2rem;
+}
+
+.extra-text {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.badge-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+}
+
+.badge-info {
+    background: rgba(0, 102, 204, 0.1);
+    color: var(--primary);
 }
 
 .recall-meta {
