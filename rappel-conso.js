@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import axios from 'axios';
+import fs from 'fs/promises';
+import path from 'path';
 import { sendEmail } from './services/email.js'; // Déplacez votre code Resend ici
 import { sendTelegram } from './services/telegram.js';
 
@@ -63,6 +65,24 @@ async function main() {
 
     if (recalls.length > 0) {
         console.log(`🔔 ${recalls.length} rappel(s) trouvé(s). Envoi des notifications...`);
+
+        // Sauvegarde pour GitHub Pages
+        try {
+            const docsDir = path.join(process.cwd(), 'docs');
+            await fs.mkdir(docsDir, { recursive: true });
+            const dataPath = path.join(docsDir, 'data.json');
+
+            const dashboardData = {
+                lastUpdate: new Date().toISOString(),
+                recalls: recalls
+            };
+
+            await fs.writeFile(dataPath, JSON.stringify(dashboardData, null, 2));
+            console.log(`📂 Données sauvegardées dans ${dataPath} pour GitHub Pages.`);
+        } catch (err) {
+            console.error("❌ Erreur lors de la sauvegarde des données:", err.message);
+        }
+
         await Promise.all([
             sendEmail(recalls, isSunday),
             sendTelegram(recalls, isSunday)

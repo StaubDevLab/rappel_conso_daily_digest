@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rappel Conso - Tableau de Bord Interactif</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button id="themeToggle" class="theme-toggle">
+                <span id="themeIcon">🌙</span> <span id="themeText">Sombre</span>
+            </button>
+            <img src="images/banner.png" alt="Rappel Conso Header" class="banner">
+            <h1>Rappel Conso Daily Digest</h1>
+            <p class="last-update" id="lastUpdate">Chargement des données...</p>
+        </header>
+
+        <main id="app">
+            <div class="loading">Chargement des derniers rappels...</div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Rappel Conso Daily Digest - Données issues de data.economie.gouv.fr</p>
+        </footer>
+    </div>
+
+    <script>
+        const app = document.getElementById('app');
+        const lastUpdateEl = document.getElementById('lastUpdate');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+
+        // Theme management
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeIcon.textContent = '☀️';
+            themeText.textContent = 'Clair';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Sombre';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Clair';
+            }
+        });
+
+        async function fetchRecalls() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error('Données non disponibles');
+                const data = await response.json();
+                renderRecalls(data);
+            } catch (err) {
+                app.innerHTML = `
+                    <div class="loading">
+                        <p>Aucun rappel disponible pour le moment.</p>
+                        <p style="font-size: 0.9rem; margin-top: 1rem;">Le script de mise à jour s'exécute quotidiennement.</p>
+                    </div>
+                `;
+                lastUpdateEl.textContent = "Aucune mise à jour disponible";
+            }
+        }
+
+        function renderRecalls(data) {
+            const { lastUpdate, recalls } = data;
+            const date = new Date(lastUpdate).toLocaleString('fr-FR', {
+                dateStyle: 'long',
+                timeStyle: 'short'
+            });
+            lastUpdateEl.textContent = `Dernière mise à jour : ${date}`;
+
+            if (!recalls || recalls.length === 0) {
+                app.innerHTML = '<div class="loading">Aucun rappel trouvé ces derniers jours.</div>';
+                return;
+            }
+
+            app.innerHTML = `
+                <div class="recalls-grid">
+                    ${recalls.map(recall => `
+                        <div class="recall-card">
+                            <img src="${recall.liens_vers_les_images || 'https://via.placeholder.com/400x200?text=Pas+d+image'}" 
+                                 alt="${recall.nom_de_la_marque_du_produit}" 
+                                 class="recall-image"
+                                 onerror="this.src='https://via.placeholder.com/400x200?text=Image+non+disponible'">
+                            <div class="recall-content">
+                                <span class="recall-category">${recall.categorie_produit || 'Alimentation'}</span>
+                                <h2 class="recall-title">${recall.nom_de_la_marque_du_produit || 'Sans marque'} - ${recall.noms_des_modeles_ou_references || 'Produit sans nom'}</h2>
+                                <p class="recall-details">${(recall.motif_du_rappel || '').substring(0, 150)}${recall.motif_du_rappel?.length > 150 ? '...' : ''}</p>
+                                <div class="recall-meta">
+                                    <span class="risk-level">Risque signalé</span>
+                                    <a href="${recall.lien_vers_la_fiche_rappel}" target="_blank" class="view-link">
+                                        Voir la fiche <span>→</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        fetchRecalls();
+    </script>
+</body>
+</html>
